@@ -28,6 +28,9 @@
  *   one second in every four). If the reading has not changed for 10
  *   seconds, the panel blanks.
  *
+ *   At power-up, both panels run a short self-test that cycles through
+ *   each band's boundary speed (25, 29, 30) and face, then go black.
+ *
  *  Dependencies
  *  ------------
  *   - FastLED (https://github.com/FastLED/FastLED)
@@ -106,6 +109,16 @@ struct FrameParser {
 
 #define CLEAR_AFTER_SECONDS 10 // Blank a panel when its reading hasn't changed for this long
 
+// Speed bands: <= GREEN_MAX_MPH is green, >= RED_MIN_MPH is red, anything
+// in between is yellow.
+#define GREEN_MAX_MPH 25
+#define RED_MIN_MPH   30
+
+// Startup self-test: show each band's top/bottom speed and its face on both
+// panels, then go black. Set RUN_STARTUP_TEST to 0 to skip it.
+#define RUN_STARTUP_TEST 1
+#define STARTUP_STEP_MS  1000  // How long each test frame stays up
+
 // Direction filtering. With ONLY_APPROACHING set to 1, targets moving away
 // from the sign are ignored. Community docs for the LD2451 say the direction
 // byte is 0x01 for approaching and 0x00 for moving away. If your sign only
@@ -148,8 +161,9 @@ unsigned long seconds = 0;        // Seconds since boot
 // keep the other side lit.
 unsigned long lastFrontChange = 0;
 unsigned long lastBackChange  = 0;
-bool isFrontClear = false;        // true = front panel is blanked and idle
-bool isBackClear  = false;        // true = back panel is blanked and idle
+// Panels start out blank and idle; they light up on the first real reading.
+bool isFrontClear = true;         // true = front panel is blanked and idle
+bool isBackClear  = true;         // true = back panel is blanked and idle
 
 
 // ==================== Matrix mapping ====================
@@ -278,40 +292,78 @@ void showSpeed(bool &isClear, unsigned long &lastChange, CRGB leds[], float &mph
     // FUTURE: treat very low speeds (pedestrians, noise) as "no target"
   }
 
+  if (seconds % 4 == 0){
+    drawFaceForSpeed(leds, mphInt);    // face frame (1 second in 4)
+  } else {
+    drawSpeedDigits(leds, mphInt);     // digits frame
+  }
+  FastLED.show();
+}
+
+// Draw a 0-99 speed as two colored 7-segment digits. Does not call show().
+void drawSpeedDigits(CRGB leds[], uint8_t mphInt) {
+  clearMatrix(leds);
   uint8_t tens = mphInt / 10;
   uint8_t ones = mphInt % 10;
 
-  if (seconds % 4 == 0){
-    // --- Face frame ---
-    if (mphInt <= 25) drawSmileyGreen(leds);
-    else if (mphInt < 30) drawNeutralYellow(leds);
-    else drawFrownRed(leds);
+  // Alternative: smooth green -> red gradient based on speed
+  //uint8_t hue = (uint8_t)map(mphInt, 0, MPH_MAX, 96, 0);
+  //CRGB onColor = CHSV(hue, 255, 255);
+  CRGB onColor;
 
-  } else {
-    // --- Digits frame ---
-    // Alternative: smooth green -> red gradient based on speed
-    //uint8_t hue = (uint8_t)map(mphInt, 0, MPH_MAX, 96, 0);
-    //CRGB onColor = CHSV(hue, 255, 255);
-    CRGB onColor;
-
-    if (mphInt <= 25) {
-      onColor = CHSV(96, 255, 180);   // green
-    }
-    else if (mphInt < 30) {
-      onColor = CHSV(40, 255, 200);   // yellow / amber
-    }
-    else {
-      onColor = CHSV(0, 255, 220);    // red
-    }
-
-    DigitBox left  = {0, 0};  // x=0..6,  y=0..14
-    DigitBox right = {9, 0};  // x=9..15, y=0..14 (gap at x=7..8)
-
-    if (SHOW_LEADING_ZERO || tens != 0) drawDigit7Seg(leds, left, tens, onColor);
-    drawDigit7Seg(leds, right, ones, onColor);
-
-    FastLED.show();
+  if (mphInt <= GREEN_MAX_MPH) {
+    onColor = CHSV(96, 255, 180);   // green
   }
+  else if (mphInt < RED_MIN_MPH) {
+    onColor = CHSV(40, 255, 200);   // yellow / amber
+  }
+  else {
+    onColor = CHSV(0, 255, 220);    // red
+  }
+
+  DigitBox left  = {0, 0};  // x=0..6,  y=0..14
+  DigitBox right = {9, 0};  // x=9..15, y=0..14 (gap at x=7..8)
+
+  if (SHOW_LEADING_ZERO || tens != 0) drawDigit7Seg(leds, left, tens, onColor);
+  drawDigit7Seg(leds, right, ones, onColor);
+}
+
+// Draw the face that matches a speed's band. Does not call show().
+void drawFaceForSpeed(CRGB leds[], uint8_t mphInt) {
+  if (mphInt <= GREEN_MAX_MPH) drawSmileyGreen(leds);
+  else if (mphInt < RED_MIN_MPH) drawNeutralYellow(leds);
+  else drawFrownRed(leds);
+}
+
+// ==================== Startup self-test ====================
+// Runs once at boot. Steps through each speed band on both panels, showing
+// the band's boundary speed and then its face, so you can see that every
+// LED, color and face works and where each threshold sits. Then it blanks
+// both panels.
+void runStartupTest() {
+  const uint8_t testSpeeds[] = {
+    GREEN_MAX_MPH,      // fastest speed that's still green
+    RED_MIN_MPH - 1,    // fastest yellow speed
+    RED_MIN_MPH         // slowest red speed
+  };
+
+  for (uint8_t i = 0; i < sizeof(testSpeeds); i++) {
+    uint8_t mph = testSpeeds[i];
+
+    drawSpeedDigits(frontLeds, mph);
+    drawSpeedDigits(backLeds,  mph);
+    FastLED.show();
+    delay(STARTUP_STEP_MS);
+
+    drawFaceForSpeed(frontLeds, mph);
+    drawFaceForSpeed(backLeds,  mph);
+    FastLED.show();
+    delay(STARTUP_STEP_MS);
+  }
+
+  clearMatrix(frontLeds);
+  clearMatrix(backLeds);
+  FastLED.show();
 }
 
 // ==================== Face graphics ====================
@@ -397,14 +449,13 @@ static void drawMouthFrown(CRGB leds[], const CRGB& mouthColor) {
   setPixelSafe(leds, 11, 11, mouthColor);
 }
 
-// ---- Complete faces (each clears the buffer, draws, then calls show()) ----
+// ---- Complete faces (each clears the buffer and draws; the caller calls show()) ----
 
 void drawSmileyGreen(CRGB leds[]) {
   clearMatrix(leds);
   drawFaceOutline(leds, CHSV(96, 255, 220));   // green outline
   drawEyes(leds, CRGB::White);
   drawMouthSmile(leds, CRGB::White);
-  FastLED.show();
 }
 
 void drawNeutralYellow(CRGB leds[]) {
@@ -412,7 +463,6 @@ void drawNeutralYellow(CRGB leds[]) {
   drawFaceOutline(leds, CHSV(40, 255, 240));   // yellow outline
   drawEyes(leds, CRGB::White);
   drawMouthNeutral(leds, CRGB::White);
-  FastLED.show();
 }
 
 void drawFrownRed(CRGB leds[]) {
@@ -420,7 +470,6 @@ void drawFrownRed(CRGB leds[]) {
   drawFaceOutline(leds, CHSV(0, 255, 240));    // red outline
   drawEyes(leds, CRGB::White);
   drawMouthFrown(leds, CRGB::White);
-  FastLED.show();
 }
 
 
@@ -659,9 +708,6 @@ void setup() {
   Serial.begin(115200);          // USB serial for debug output
   delay(200);
 
-  RadarSerialFront.begin(RADAR_BAUD);
-  RadarSerialBack.begin(RADAR_BAUD);
-
   // Register both panels with FastLED. A call to FastLED.show() refreshes both.
   FastLED.addLeds<WS2812B, FRONT_LED_PIN, GRB>(frontLeds, NUM_LEDS);
   FastLED.addLeds<WS2812B, BACK_LED_PIN, GRB>(backLeds, NUM_LEDS);
@@ -669,6 +715,16 @@ void setup() {
   clearMatrix(frontLeds);
   clearMatrix(backLeds);
   FastLED.show();
+
+#if RUN_STARTUP_TEST
+  Serial.println("Running startup self-test...");
+  runStartupTest();   // ends with both panels black
+#endif
+
+  // Start the radars after the self-test so stale bytes don't pile up in
+  // the UART buffers while it runs.
+  RadarSerialFront.begin(RADAR_BAUD);
+  RadarSerialBack.begin(RADAR_BAUD);
 
   Serial.println("Mega2560: 2x LD2451 -> MPH -> 2-digit 7seg on 2x 16x16 matrices.");
   Serial.println("Wiring: Front LD2451 TX->Mega15(RX3), Back LD2451 TX->Mega17(RX2), GND->GND, VCC->5V.");

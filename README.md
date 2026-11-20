@@ -12,6 +12,8 @@ Each side of the sign has its own 24 GHz radar and a 16×16 LED panel. When a ca
 
 The panel shows the digits for three seconds out of every four and the face for the fourth. If the reading doesn't change for 10 seconds, the panel goes blank.
 
+At power-up, both panels run a self-test: they show `25` and then a green smiley, `29` and a yellow neutral face, and `30` and a red frown, for one second each. Then they go black until the first car is detected. This makes it easy to spot a dead LED or a wiring problem.
+
 ## Hardware
 
 | Part | Qty | Notes |
@@ -58,13 +60,16 @@ The tunable values are `#define`s near the top of `radar-sign.ino`:
 | `BRIGHTNESS` | `64` | Global LED brightness (0–255) |
 | `SHOW_LEADING_ZERO` | `1` | Show `05` rather than ` 5` |
 | `MPH_MAX` | `99` | Upper limit for the displayed speed |
+| `GREEN_MAX_MPH` / `RED_MIN_MPH` | `25` / `30` | Speed band thresholds (yellow is in between) |
+| `RUN_STARTUP_TEST` | `1` | Run the power-up self-test (`0` to skip) |
+| `STARTUP_STEP_MS` | `1000` | How long each self-test frame stays up |
 | `CLEAR_AFTER_SECONDS` | `10` | Blank a panel after this many seconds with no new reading |
 | `ONLY_APPROACHING` | `1` | Ignore cars driving away from the sign |
 | `APPROACHING_DIR` | `1` | Radar direction byte value that means "approaching" (see below) |
 | `FRONT_LED_PIN` / `BACK_LED_PIN` | `6` / `7` | LED data pins |
 | `RadarSerialFront` / `RadarSerialBack` | `Serial3` / `Serial2` | Radar UARTs |
 
-The speed limits for the green, yellow and red bands (25 / 30 mph) are set in `showSpeed()`. If your matrix is wired or mounted differently, adjust the `XY()` function.
+If your matrix is wired or mounted differently, adjust the `XY()` function.
 
 > **Checking the direction setting:** community documentation for the LD2451 says the direction byte is `1` for approaching and `0` for moving away, but this hasn't been checked against the official spec. Walk or drive toward the sign with the Serial Monitor open and watch `radarData.speedDirection`. If approaching targets show `0`, set `APPROACHING_DIR` to `0`.
 
