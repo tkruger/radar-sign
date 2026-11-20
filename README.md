@@ -58,27 +58,27 @@ The tunable values are `#define`s near the top of `radar-sign.ino`:
 | `BRIGHTNESS` | `64` | Global LED brightness (0–255) |
 | `SHOW_LEADING_ZERO` | `1` | Show `05` rather than ` 5` |
 | `MPH_MAX` | `99` | Upper limit for the displayed speed |
+| `CLEAR_AFTER_SECONDS` | `10` | Blank a panel after this many seconds with no new reading |
+| `ONLY_APPROACHING` | `1` | Ignore cars driving away from the sign |
+| `APPROACHING_DIR` | `1` | Radar direction byte value that means "approaching" (see below) |
 | `FRONT_LED_PIN` / `BACK_LED_PIN` | `6` / `7` | LED data pins |
 | `RadarSerialFront` / `RadarSerialBack` | `Serial3` / `Serial2` | Radar UARTs |
 
 The speed limits for the green, yellow and red bands (25 / 30 mph) are set in `showSpeed()`. If your matrix is wired or mounted differently, adjust the `XY()` function.
 
+> **Checking the direction setting:** community documentation for the LD2451 says the direction byte is `1` for approaching and `0` for moving away, but this hasn't been checked against the official spec. Walk or drive toward the sign with the Serial Monitor open and watch `radarData.speedDirection`. If approaching targets show `0`, set `APPROACHING_DIR` to `0`.
+
 ## How it works
 
-1. **Read the radar:** `parseOneByte()` is a byte-at-a-time state machine that finds LD2451 report frames (`F4 F3 F2 F1` … `F8 F7 F6 F5`).
+1. **Read the radar:** `parseOneByte()` is a byte-at-a-time state machine that finds LD2451 report frames (`F4 F3 F2 F1` … `F8 F7 F6 F5`). Each radar has its own `FrameParser`, so the two data streams never get mixed.
 2. **Decode targets:** `parseRadarPayload()` pulls out angle, distance, direction, speed (km/h) and SNR for each target, and converts the speed to mph.
-3. **Pick a speed:** `payloadToSpeedMph()` keeps the fastest target in the frame.
-4. **Draw:** `showSpeed()` handles the 10-second timeout and switches between two 7-segment digits (`drawDigit7Seg()`) and a pixel-art face (`drawSmileyGreen()` and the other face functions).
+3. **Pick a speed:** `payloadToSpeedMph()` keeps the fastest approaching target in the frame.
+4. **Draw:** `showSpeed()` runs each panel's own timeout and switches between two 7-segment digits (`drawDigit7Seg()`) and a pixel-art face (`drawSmileyGreen()` and the other face functions). Speeds above 99 mph show as `99`.
 
-## Known limitations and ideas
+## Ideas
 
-These are also marked with `NOTE:` comments in the code:
-
-- **Shared parser state:** both radars feed the same frame parser. If a frame from one radar is only half received when the other radar's bytes arrive, the two streams can corrupt each other. A parser state per radar would fix this.
-- **Shared timeout clock:** the 10-second timer (`last`) is shared, so a new reading on one side also keeps the other side lit.
-- **Direction is ignored:** cars driving away are shown too. `speedDirection` is available if you only want to show approaching traffic.
-- **The speed clamp runs too late:** speeds of 100 mph and above show a blank tens digit instead of `99`.
-- **Low-speed filter:** there's a placeholder for hiding very low speeds (pedestrians, noise) that isn't implemented yet.
+- **Low-speed filter:** there's a placeholder in `showSpeed()` for hiding very low speeds (pedestrians, noise).
+- **Fewer LED refreshes:** `FastLED.show()` updates both panels and runs several times per loop. Calling it once per loop would leave more time for reading the radar UARTs.
 
 ## License
 

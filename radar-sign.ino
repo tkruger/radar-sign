@@ -71,6 +71,23 @@ static const uint8_t DIGIT_MASK[10] = {
   0b1111011  // 9
 };
 
+// ---- LD2451 frame parser state (one instance per radar) ----
+static const uint16_t PAYLOAD_MAX = 256;   // Largest payload we accept
+
+enum ParseState : uint8_t { FIND_HDR, READ_LEN, READ_PAYLOAD, READ_TAIL };
+
+// All the state needed to decode one radar's byte stream.
+struct FrameParser {
+  ParseState st;
+  uint8_t  hdrPos;        // How many header bytes have matched so far
+  uint8_t  tailPos;       // How many tail bytes have matched so far
+  uint8_t  lenBytes[2];   // Raw length bytes as they arrive
+  uint8_t  lenPos;        // How many length bytes have been received
+  uint16_t payloadLen;    // Length announced by the current frame
+  uint16_t payloadRead;   // Payload bytes received so far
+  uint8_t  payload[PAYLOAD_MAX];
+};
+
 // ==================== Config ====================
 #define RADAR_BAUD 115200      // LD2451 default UART baud rate
 
@@ -87,6 +104,15 @@ static const uint8_t DIGIT_MASK[10] = {
 
 #define ANIMATION_SECONDS 3    // Reserved for future animation timing (unused)
 
+#define CLEAR_AFTER_SECONDS 10 // Blank a panel when its reading hasn't changed for this long
+
+// Direction filtering. With ONLY_APPROACHING set to 1, targets moving away
+// from the sign are ignored. Community docs for the LD2451 say the direction
+// byte is 0x01 for approaching and 0x00 for moving away. If your sign only
+// lights up for cars driving AWAY, change APPROACHING_DIR to 0.
+#define ONLY_APPROACHING  1
+#define APPROACHING_DIR   1
+
 // One pixel buffer per physical panel.
 CRGB frontLeds[NUM_LEDS];
 CRGB backLeds[NUM_LEDS];
@@ -102,7 +128,7 @@ struct RadarData {
 
   byte angle;            // Target angle (raw, per LD2451 protocol)
   byte distance;         // Target distance in meters
-  byte speedDirection;   // 0 = approaching, 1 = moving away (per LD2451 docs)
+  byte speedDirection;   // Movement direction; see APPROACHING_DIR above
   byte speed;            // Speed in km/h as reported by the radar
   byte snr;              // Signal-to-noise ratio
 
@@ -116,12 +142,14 @@ unsigned long currentMillis;
 unsigned long previousMillis = 0;
 const long interval = 1000;       // ms per "tick" of the seconds counter
 unsigned long seconds = 0;        // Seconds since boot
-unsigned long last = 0;           // Value of `seconds` when a speed last changed
-                                  // NOTE: shared by front and back panels, so a
-                                  // change on one side also resets the other
-                                  // side's 10-second clear timer.
-unsigned long isFrontClear = 0;   // 1 = front panel is blanked and idle
-unsigned long isBackClear  = 0;   // 1 = back panel is blanked and idle
+
+// Per-panel display timers: the value of `seconds` when each panel's speed
+// last changed. Each side keeps its own, so a reading on one side doesn't
+// keep the other side lit.
+unsigned long lastFrontChange = 0;
+unsigned long lastBackChange  = 0;
+bool isFrontClear = false;        // true = front panel is blanked and idle
+bool isBackClear  = false;        // true = back panel is blanked and idle
 
 
 // ==================== Matrix mapping ====================
@@ -200,54 +228,55 @@ void drawDigit7Seg(CRGB leds[], const DigitBox &d, uint8_t digit, const CRGB &on
 // ==================== Display state machine ====================
 // Draws one panel. Called every pass through loop() for each panel.
 //
-//   isClear  - per-panel flag: 1 means the panel has timed out and is blank
-//   leds     - that panel's pixel buffer
-//   mph      - latest speed from the radar (may be reset to 0 here)
-//   lastMph  - last speed shown, used to spot a new reading
+//   isClear    - per-panel flag: true means the panel has timed out and is blank
+//   lastChange - per-panel timer: `seconds` value when the speed last changed
+//   leds       - that panel's pixel buffer
+//   mph        - latest speed from the radar (may be reset to 0 here)
+//   lastMph    - last speed shown, used to spot a new reading
 //
 // Behavior:
-//   - A new speed restarts the 10-second display timer.
-//   - After 10 seconds with no change, the panel blanks and stays blank
-//     until the next new reading.
+//   - A new speed restarts this panel's display timer.
+//   - After CLEAR_AFTER_SECONDS with no change, the panel blanks and stays
+//     blank until the next new reading.
 //   - While active, one second in four shows a face and the other three
 //     show the speed as colored digits.
 //
 // NOTE: FastLED.show() pushes ALL registered panels at once, not just the
 // panel whose buffer is passed in here.
-void showSpeed(unsigned long &isClear, CRGB leds[], float &mph, float &lastMph) {
+void showSpeed(bool &isClear, unsigned long &lastChange, CRGB leds[], float &mph, float &lastMph) {
   clearMatrix(leds);
-  uint8_t mphInt = (uint8_t)lroundf(mph);
-
-  if (mphInt <= 2){
-    // FUTURE: treat very low speeds (pedestrians, noise) as "no target"
-  }
 
   if (lastMph != mph){
-    // New reading: restart the 10-second display window
-    Serial.println("Velocity changed, showing for 10 more seconds");
-    last = seconds;
+    // New reading: restart this panel's display window
+    Serial.println("Velocity changed, restarting display timer");
+    lastChange = seconds;
     lastMph = mph;
-    isClear = 0;
-  } else if (isClear == 1){
+    isClear = false;
+  } else if (isClear){
     // Already blanked and nothing new: leave the (cleared) buffer as-is
     return;
   }
 
-  if (seconds - last >= 10 && isClear != 1) {
+  if (seconds - lastChange >= CLEAR_AFTER_SECONDS) {
     // Timed out: blank the panel and reset the speed values
-    Serial.println("Clearing after 10 seconds");
-    isClear = 1;
+    Serial.println("Clearing after timeout");
+    isClear = true;
     mph = 0;
     lastMph = 0;
     FastLED.show();
     return;
   }
 
-  // NOTE: this clamp runs after mphInt was computed, so it does not affect
-  // the digits drawn below. Readings of 100+ mph show a blank tens digit
-  // (drawDigit7Seg ignores values > 9).
-  if (mph < 0) mph = 0;
-  if (mph > MPH_MAX) mph = MPH_MAX;
+  // Clamp to what two digits can show, then round. Clamping a local copy
+  // keeps `mph`/`lastMph` untouched so change detection still works.
+  float shownMph = mph;
+  if (shownMph < 0) shownMph = 0;
+  if (shownMph > MPH_MAX) shownMph = MPH_MAX;
+  uint8_t mphInt = (uint8_t)lroundf(shownMph);
+
+  if (mphInt <= 2){
+    // FUTURE: treat very low speeds (pedestrians, noise) as "no target"
+  }
 
   uint8_t tens = mphInt / 10;
   uint8_t ones = mphInt % 10;
@@ -402,68 +431,63 @@ void drawFrownRed(CRGB leds[]) {
 //      header       little-endian                            tail
 //
 // parseOneByte() is a small state machine that takes one byte at a time and
-// returns true when a full, valid frame has landed in `payload`.
+// returns true when a full, valid frame has landed in the parser's `payload`.
 //
-// NOTE: there is only one parser state (st, hdrPos, payload, ...) and both
-// radars use it. If a frame from one radar is only half received when the
-// other radar's bytes are fed in, the two streams can corrupt each other.
-// Giving each radar its own parser state would fix this.
+// Each radar gets its own FrameParser, so a half-received frame from one
+// radar can never be mixed up with bytes from the other.
+
+// (FrameParser and ParseState are declared in the Types section at the top.)
 
 static const uint8_t HDR[4]  = {0xF4, 0xF3, 0xF2, 0xF1};
 static const uint8_t TAIL[4] = {0xF8, 0xF7, 0xF6, 0xF5};
 
-enum ParseState : uint8_t { FIND_HDR, READ_LEN, READ_PAYLOAD, READ_TAIL };
-ParseState st = FIND_HDR;
+// Zero-initialized globals, so every parser starts in FIND_HDR.
+FrameParser frontParser;
+FrameParser backParser;
 
-uint8_t hdrPos = 0;    // How many header bytes have matched so far
-uint8_t tailPos = 0;   // How many tail bytes have matched so far
-
-uint16_t payloadLen = 0;    // Length announced by the current frame
-uint16_t payloadRead = 0;   // Payload bytes received so far
-static const uint16_t PAYLOAD_MAX = 256;
-uint8_t payload[PAYLOAD_MAX];
-
-// Feed one byte to the parser. Returns true when a full frame has been received.
-bool parseOneByte(uint8_t b) {
+// Feed one byte to a parser. Returns true when a full frame has been received.
+bool parseOneByte(FrameParser &p, uint8_t b) {
   // Uncomment to dump raw bytes in hex for debugging:
   //if (b < 0x10) Serial.print("0");
   //Serial.print(b, HEX);
-  switch (st) {
+  switch (p.st) {
     case FIND_HDR:
       // Look for the 4-byte header; start over on any mismatch
-      if (b == HDR[hdrPos]) {
-        hdrPos++;
-        if (hdrPos == 4) { hdrPos = 0; st = READ_LEN; }
-      } else hdrPos = 0;
-      break;
-
-    case READ_LEN: {
-      // Two-byte little-endian payload length
-      static uint8_t lenBytes[2];
-      static uint8_t lenPos = 0;
-      lenBytes[lenPos++] = b;
-      if (lenPos == 2) {
-        lenPos = 0;
-        payloadLen = (uint16_t)lenBytes[0] | ((uint16_t)lenBytes[1] << 8);
-        // Reject lengths that would overflow the buffer
-        if (payloadLen > PAYLOAD_MAX) { st = FIND_HDR; payloadRead = 0; return false; }
-        payloadRead = 0;
-        st = READ_PAYLOAD;
+      if (b == HDR[p.hdrPos]) {
+        p.hdrPos++;
+        if (p.hdrPos == 4) { p.hdrPos = 0; p.lenPos = 0; p.st = READ_LEN; }
+      } else {
+        // A mismatched byte might itself be the first header byte
+        p.hdrPos = (b == HDR[0]) ? 1 : 0;
       }
       break;
-    }
+
+    case READ_LEN:
+      // Two-byte little-endian payload length
+      p.lenBytes[p.lenPos++] = b;
+      if (p.lenPos == 2) {
+        p.lenPos = 0;
+        p.payloadLen = (uint16_t)p.lenBytes[0] | ((uint16_t)p.lenBytes[1] << 8);
+        p.payloadRead = 0;
+        // Reject lengths that would overflow the buffer
+        if (p.payloadLen > PAYLOAD_MAX) { p.st = FIND_HDR; return false; }
+        // A zero-length payload goes straight to the tail
+        p.tailPos = 0;
+        p.st = (p.payloadLen == 0) ? READ_TAIL : READ_PAYLOAD;
+      }
+      break;
 
     case READ_PAYLOAD:
-      payload[payloadRead++] = b;
-      if (payloadRead >= payloadLen) { tailPos = 0; st = READ_TAIL; }
+      p.payload[p.payloadRead++] = b;
+      if (p.payloadRead >= p.payloadLen) { p.tailPos = 0; p.st = READ_TAIL; }
       break;
 
     case READ_TAIL:
       // The frame is valid only if all 4 tail bytes match
-      if (b == TAIL[tailPos]) {
-        tailPos++;
-        if (tailPos == 4) { st = FIND_HDR; tailPos = 0; return true; }
-      } else { st = FIND_HDR; tailPos = 0; }
+      if (b == TAIL[p.tailPos]) {
+        p.tailPos++;
+        if (p.tailPos == 4) { p.st = FIND_HDR; p.tailPos = 0; return true; }
+      } else { p.st = FIND_HDR; p.tailPos = 0; }
       break;
   }
   return false;
@@ -539,18 +563,18 @@ uint8_t parseRadarPayload(const uint8_t* payloadBuf,
   return count;
 }
 
-// Turn the frame that was just parsed into one speed to display.
+// Turn the frame a parser just completed into one speed to display.
 // Returns false only when the payload is too short to be a report.
 //
-// Policy: show the FASTEST target in the frame. Direction (approaching vs
-// moving away) is currently ignored.
-bool payloadToSpeedMph(float &outMph) {
-  if (payloadLen < 2) return false;
+// Policy: show the FASTEST target in the frame. With ONLY_APPROACHING set,
+// targets moving away from the sign are skipped.
+bool payloadToSpeedMph(const FrameParser &p, float &outMph) {
+  if (p.payloadLen < 2) return false;
 
   const uint8_t MAX_TARGETS = 8;
   RadarData targets[MAX_TARGETS];
 
-  uint8_t count = parseRadarPayload(payload, payloadLen, targets, MAX_TARGETS);
+  uint8_t count = parseRadarPayload(p.payload, p.payloadLen, targets, MAX_TARGETS);
   if (count == 0) {
     outMph = 0.0f;
     return true; // valid frame, just no targets
@@ -558,6 +582,7 @@ bool payloadToSpeedMph(float &outMph) {
 
   float maxMph = 0.0f;
   for (uint8_t i = 0; i < count; i++) {
+    if (ONLY_APPROACHING && targets[i].speedDirection != APPROACHING_DIR) continue;
     if (targets[i].speedMph > maxMph) {
       maxMph = targets[i].speedMph;
     }
@@ -661,8 +686,8 @@ void loop() {
   // Read every byte waiting from the front radar
   while (RadarSerialFront.available() > 0) {
     uint8_t b = (uint8_t)RadarSerialFront.read();
-    if (parseOneByte(b)) {
-      if (payloadToSpeedMph(frontMph)) {
+    if (parseOneByte(frontParser, b)) {
+      if (payloadToSpeedMph(frontParser, frontMph)) {
         Serial.print("Speed Front: ");
         Serial.print(frontMph, 1);
         Serial.println(" mph");
@@ -673,8 +698,8 @@ void loop() {
   // Read every byte waiting from the back radar
   while (RadarSerialBack.available() > 0) {
     uint8_t b = (uint8_t)RadarSerialBack.read();
-    if (parseOneByte(b)) {
-      if (payloadToSpeedMph(backMph)) {
+    if (parseOneByte(backParser, b)) {
+      if (payloadToSpeedMph(backParser, backMph)) {
         Serial.print("Speed Back: ");
         Serial.print(backMph, 1);
         Serial.println(" mph");
@@ -683,6 +708,6 @@ void loop() {
   }
 
   // Redraw both panels
-  showSpeed(isFrontClear, frontLeds, frontMph, lastFrontMph);
-  showSpeed(isBackClear, backLeds, backMph, lastBackMph);
+  showSpeed(isFrontClear, lastFrontChange, frontLeds, frontMph, lastFrontMph);
+  showSpeed(isBackClear,  lastBackChange,  backLeds,  backMph,  lastBackMph);
 }
