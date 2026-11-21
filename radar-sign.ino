@@ -101,6 +101,10 @@ struct FrameParser {
 #define NUM_LEDS     (WIDTH * HEIGHT)
 #define BRIGHTNESS   64        // Global brightness, 0-255. Keep this modest:
                                // 512 LEDs at full white draw a LOT of current.
+#define MAX_MILLIAMPS 2000      // LED current cap (mA at 5 V). Sized for a
+                               // 5 V / 3 A USB charger, leaving ~1 A for the
+                               // two radars and the Mega. Raise it only with a
+                               // bigger supply.
 
 #define SHOW_LEADING_ZERO 1    // 1 = show "05", 0 = show " 5"
 #define MPH_MAX           99   // Two digits only, so clamp the display here
@@ -712,6 +716,7 @@ void setup() {
   FastLED.addLeds<WS2812B, FRONT_LED_PIN, GRB>(frontLeds, NUM_LEDS);
   FastLED.addLeds<WS2812B, BACK_LED_PIN, GRB>(backLeds, NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);
   clearMatrix(frontLeds);
   clearMatrix(backLeds);
   FastLED.show();

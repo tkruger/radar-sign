@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1180" viewBox="0 0 1600 1180" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><pattern id="ledgrid" width="12.5" height="6.4" patternUnits="userSpaceOnUse"><circle cx="6.25" cy="3.2" r="2" fill="#3a3a3a"/></pattern></defs>
+<rect width="1600" height="1180" fill="#ffffff"/>
+<text x="40" y="48" font-size="28" text-anchor="start" font-weight="bold" fill="#222">radar-sign — wiring diagram</text>
+<text x="40" y="74" font-size="15" text-anchor="start" font-weight="normal" fill="#555">Arduino Mega 2560 · 2× HLK-LD2451 radar · 2× 16×16 WS2812B matrix · powered from a 5 V USB charger</text>
+<rect x="40" y="110" width="170" height="100" rx="10" fill="#eeeeee" stroke="#333" stroke-width="2"/>
+<rect x="22" y="138" width="18" height="8" fill="#999"/><rect x="22" y="174" width="18" height="8" fill="#999"/>
+<text x="125" y="148" font-size="16" text-anchor="middle" font-weight="bold" fill="#222">USB charger</text>
+<text x="125" y="170" font-size="13" text-anchor="middle" font-weight="normal" fill="#222">5 V · 3 A or more</text>
+<text x="125" y="190" font-size="12" text-anchor="middle" font-weight="normal" fill="#555">(USB-A or USB-C)</text>
+<rect x="210" y="148" width="12" height="24" fill="#888" stroke="#444"/>
+<line x1="222" y1="160" x2="330" y2="160" stroke="#666" stroke-width="14"/>
+<rect x="326" y="151" width="6" height="18" fill="#444"/>
+<text x="276" y="140" font-size="12" text-anchor="middle" font-weight="bold" fill="#222">USB cable</text>
+<text x="276" y="190" font-size="11" text-anchor="middle" font-weight="normal" fill="#555">device end cut off</text>
+<path d="M332,155 C352,155 352,120 375,120 L560,120" fill="none" stroke="#d62728" stroke-width="4" stroke-linejoin="round"/>
+<path d="M332,158 C352,158 352,140 375,140 L720,140" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round"/>
+<path d="M332,162 C352,162 352,180 375,180 L410,180" fill="none" stroke="#888" stroke-width="5" stroke-linejoin="round"/>
+<path d="M332,162 C352,162 352,180 375,180 L410,180" fill="none" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+<rect x="410" y="174" width="22" height="12" rx="2" fill="#555"/>
+<text x="442" y="184" font-size="12" text-anchor="start" font-weight="normal" fill="#555">D− (white) — not used: insulate</text>
+<path d="M332,165 C352,165 352,200 375,200 L410,200" fill="none" stroke="#888" stroke-width="5" stroke-linejoin="round"/>
+<path d="M332,165 C352,165 352,200 375,200 L410,200" fill="none" stroke="#2ca02c" stroke-width="3" stroke-linejoin="round"/>
+<rect x="410" y="194" width="22" height="12" rx="2" fill="#555"/>
+<text x="442" y="204" font-size="12" text-anchor="start" font-weight="normal" fill="#555">D+ (green) — not used: insulate</text>
+<text x="385" y="113" font-size="12" text-anchor="start" font-weight="bold" fill="#d62728">VBUS +5 V (red)</text>
+<text x="385" y="134" font-size="12" text-anchor="start" font-weight="bold" fill="#222222">GND (black)</text>
+<rect x="560" y="111" width="64" height="18" rx="9" fill="#fff" stroke="#333" stroke-width="2"/>
+<line x1="566" y1="120" x2="618" y2="120" stroke="#999" stroke-width="2"/>
+<text x="592" y="103" font-size="12" text-anchor="middle" font-weight="bold" fill="#222">3 A fuse</text>
+<path d="M624,120 L760,120 L760,330" fill="none" stroke="#d62728" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="760" cy="330" r="5" fill="#d62728"/>
+<path d="M720,140 L720,322 A8,8 0 0 1 720,338 L720,360" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="720" cy="360" r="5" fill="#222222"/>
+<line x1="60" y1="330" x2="1560" y2="330" stroke="#d62728" stroke-width="7" stroke-linecap="round"/>
+<line x1="60" y1="360" x2="1560" y2="360" stroke="#222222" stroke-width="7" stroke-linecap="round"/>
+<text x="60" y="320" font-size="13" text-anchor="start" font-weight="bold" fill="#d62728">+5 V bus</text>
+<text x="60" y="382" font-size="13" text-anchor="start" font-weight="bold" fill="#222222">GND bus</text>
+<text x="200" y="320" font-size="12" text-anchor="start" font-weight="normal" fill="#555">terminal strip / lever connectors · 18 AWG to the matrices</text>
+<text x="990.0" y="100" font-size="16" text-anchor="middle" font-weight="bold" fill="#222">Front LED matrix</text>
+<rect x="880" y="110" width="220" height="150" rx="6" fill="#151515" stroke="#000" stroke-width="2"/>
+<rect x="890" y="118" width="200" height="102" fill="url(#ledgrid)"/>
+<text x="990.0" y="234" font-size="12" text-anchor="middle" font-weight="normal" fill="#ddd">16×16 WS2812B · IN end</text>
+<rect x="924" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="930" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">5V</text>
+<rect x="984" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="990" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">GND</text>
+<rect x="1044" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="1050" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">DIN</text>
+<path d="M930,266 L930,330" fill="none" stroke="#d62728" stroke-width="4"/>
+<circle cx="930" cy="330" r="5" fill="#d62728"/>
+<path d="M990,266 L990,322 A8,8 0 0 1 990,338 L990,360" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="990" cy="360" r="5" fill="#222222"/>
+<path d="M930,290 L955.0,290" fill="none" stroke="#d62728" stroke-width="3" stroke-linejoin="round"/>
+<path d="M965.0,290 L990,290" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<line x1="955.0" y1="278" x2="955.0" y2="302" stroke="#333" stroke-width="3"/>
+<path d="M969.0,278 Q963.0,290 969.0,302" fill="none" stroke="#333" stroke-width="3"/>
+<text x="947.0" y="284" font-size="13" text-anchor="middle" font-weight="bold" fill="#d62728">+</text>
+<text x="920" y="295" font-size="12" text-anchor="end" font-weight="normal" fill="#222">1000 µF ≥ 6.3 V</text>
+<circle cx="930" cy="290" r="5" fill="#d62728"/>
+<circle cx="990" cy="290" r="5" fill="#222222"/>
+<path d="M1050,266 L1050,322 A8,8 0 0 1 1050,338 L1050,352 A8,8 0 0 1 1050,368 L1050,392" fill="none" stroke="#ff7f0e" stroke-width="3"/>
+<rect x="1041" y="392" width="18" height="44" rx="3" fill="#f3e4c8" stroke="#555" stroke-width="2"/>
+<text x="1034" y="419" font-size="13" text-anchor="end" font-weight="bold" fill="#222">330 Ω</text>
+<path d="M1050,436 L1050,462 L960,462 L960,520" fill="none" stroke="#ff7f0e" stroke-width="3" stroke-linejoin="round"/>
+<text x="1370.0" y="100" font-size="16" text-anchor="middle" font-weight="bold" fill="#222">Back LED matrix</text>
+<rect x="1260" y="110" width="220" height="150" rx="6" fill="#151515" stroke="#000" stroke-width="2"/>
+<rect x="1270" y="118" width="200" height="102" fill="url(#ledgrid)"/>
+<text x="1370.0" y="234" font-size="12" text-anchor="middle" font-weight="normal" fill="#ddd">16×16 WS2812B · IN end</text>
+<rect x="1304" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="1310" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">5V</text>
+<rect x="1364" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="1370" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">GND</text>
+<rect x="1424" y="256" width="12" height="10" fill="#c9a227" stroke="#7a6212"/>
+<text x="1430" y="251" font-size="11" text-anchor="middle" font-weight="bold" fill="#fff">DIN</text>
+<path d="M1310,266 L1310,330" fill="none" stroke="#d62728" stroke-width="4"/>
+<circle cx="1310" cy="330" r="5" fill="#d62728"/>
+<path d="M1370,266 L1370,322 A8,8 0 0 1 1370,338 L1370,360" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="1370" cy="360" r="5" fill="#222222"/>
+<path d="M1310,290 L1335.0,290" fill="none" stroke="#d62728" stroke-width="3" stroke-linejoin="round"/>
+<path d="M1345.0,290 L1370,290" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<line x1="1335.0" y1="278" x2="1335.0" y2="302" stroke="#333" stroke-width="3"/>
+<path d="M1349.0,278 Q1343.0,290 1349.0,302" fill="none" stroke="#333" stroke-width="3"/>
+<text x="1327.0" y="284" font-size="13" text-anchor="middle" font-weight="bold" fill="#d62728">+</text>
+<text x="1300" y="295" font-size="12" text-anchor="end" font-weight="normal" fill="#222">1000 µF ≥ 6.3 V</text>
+<circle cx="1310" cy="290" r="5" fill="#d62728"/>
+<circle cx="1370" cy="290" r="5" fill="#222222"/>
+<path d="M1430,266 L1430,322 A8,8 0 0 1 1430,338 L1430,352 A8,8 0 0 1 1430,368 L1430,392" fill="none" stroke="#ff7f0e" stroke-width="3"/>
+<rect x="1421" y="392" width="18" height="44" rx="3" fill="#f3e4c8" stroke="#555" stroke-width="2"/>
+<text x="1414" y="419" font-size="13" text-anchor="end" font-weight="bold" fill="#222">330 Ω</text>
+<path d="M1430,436 L1430,484 L1030,484 L1030,520" fill="none" stroke="#ff7f0e" stroke-width="3" stroke-linejoin="round"/>
+<rect x="500" y="520" width="600" height="300" rx="10" fill="#0b6e8a" stroke="#064a5d" stroke-width="3"/>
+<rect x="730" y="720" width="140" height="70" rx="4" fill="#1d1d1d"/>
+<text x="800" y="761" font-size="12" text-anchor="middle" font-weight="normal" fill="#bbb">ATmega2560</text>
+<text x="800.0" y="660" font-size="28" text-anchor="middle" font-weight="bold" fill="#fff">Arduino Mega 2560</text>
+<text x="800.0" y="688" font-size="13" text-anchor="middle" font-weight="normal" fill="#d6eef5">powered through its 5V pin</text>
+<rect x="486" y="750" width="34" height="40" fill="#bbb" stroke="#666"/>
+<text x="530" y="810" font-size="11" text-anchor="start" font-weight="normal" fill="#d6eef5">USB-B: programming only</text>
+<rect x="553" y="516" width="14" height="10" fill="#222"/>
+<text x="560" y="546" font-size="13" text-anchor="middle" font-weight="bold" fill="#fff">5V</text>
+<rect x="613" y="516" width="14" height="10" fill="#222"/>
+<text x="620" y="546" font-size="13" text-anchor="middle" font-weight="bold" fill="#fff">GND</text>
+<rect x="953" y="516" width="14" height="10" fill="#222"/>
+<text x="960" y="546" font-size="13" text-anchor="middle" font-weight="bold" fill="#fff">D6</text>
+<rect x="1023" y="516" width="14" height="10" fill="#222"/>
+<text x="1030" y="546" font-size="13" text-anchor="middle" font-weight="bold" fill="#fff">D7</text>
+<path d="M560,330 L560,352 A8,8 0 0 1 560,368 L560,520" fill="none" stroke="#d62728" stroke-width="4"/>
+<circle cx="560" cy="330" r="5" fill="#d62728"/>
+<path d="M620,360 L620,520" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="620" cy="360" r="5" fill="#222222"/>
+<rect x="496" y="633" width="10" height="14" fill="#222"/>
+<text x="514" y="645" font-size="13" text-anchor="start" font-weight="bold" fill="#fff">RX3 · 15</text>
+<rect x="496" y="713" width="10" height="14" fill="#222"/>
+<text x="514" y="725" font-size="13" text-anchor="start" font-weight="bold" fill="#fff">TX3 · 14</text>
+<rect x="1094" y="633" width="10" height="14" fill="#222"/>
+<text x="1086" y="645" font-size="13" text-anchor="end" font-weight="bold" fill="#fff">RX2 · 17</text>
+<rect x="1094" y="713" width="10" height="14" fill="#222"/>
+<text x="1086" y="725" font-size="13" text-anchor="end" font-weight="bold" fill="#fff">TX2 · 16</text>
+<rect x="80" y="560" width="240" height="170" rx="8" fill="#1e6b3a" stroke="#0e3d20" stroke-width="2"/>
+<rect x="150" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="176" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="202" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="228" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<text x="200.0" y="610" font-size="18" text-anchor="middle" font-weight="bold" fill="#fff">Front radar</text>
+<text x="200.0" y="632" font-size="13" text-anchor="middle" font-weight="normal" fill="#e0f2e7">HLK-LD2451 24 GHz radar</text>
+<text x="200.0" y="700" font-size="12" text-anchor="middle" font-weight="normal" fill="#cfe9d8" font-style="italic">faces traffic approaching the front</text>
+<text x="200.0" y="718" font-size="11" text-anchor="middle" font-weight="normal" fill="#cfe9d8">5 V in · 3.3 V UART · ≥ 300 mA</text>
+<rect x="114" y="554" width="12" height="10" fill="#c9a227"/>
+<text x="120" y="580" font-size="12" text-anchor="middle" font-weight="bold" fill="#fff">5V</text>
+<rect x="164" y="554" width="12" height="10" fill="#c9a227"/>
+<text x="170" y="580" font-size="12" text-anchor="middle" font-weight="bold" fill="#fff">GND</text>
+<path d="M120,554 L120,368 A8,8 0 0 0 120,352 L120,330" fill="none" stroke="#d62728" stroke-width="4"/>
+<circle cx="120" cy="330" r="5" fill="#d62728"/>
+<path d="M170,554 L170,360" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="170" cy="360" r="5" fill="#222222"/>
+<rect x="314" y="634" width="10" height="12" fill="#c9a227"/>
+<text x="306" y="645" font-size="12" text-anchor="end" font-weight="bold" fill="#fff">TX</text>
+<rect x="314" y="714" width="10" height="12" fill="#c9a227"/>
+<text x="306" y="725" font-size="12" text-anchor="end" font-weight="bold" fill="#fff">RX</text>
+<path d="M324,640 L496,640" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round"/>
+<path d="M496,720 L452,720" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 6"/>
+<path d="M368,720 L324,720" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 6"/>
+<rect x="368" y="705" width="84" height="30" rx="4" fill="#fff" stroke="#1f77b4" stroke-width="2"/>
+<text x="410" y="725" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f77b4">5 V → 3.3 V</text>
+<text x="410" y="754" font-size="11" text-anchor="middle" font-weight="normal" fill="#444">1 kΩ / 2 kΩ divider</text>
+<text x="410" y="769" font-size="11" text-anchor="middle" font-weight="normal" fill="#444">or level shifter</text>
+<text x="412" y="632" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f77b4">radar TX → Mega RX3</text>
+<rect x="1300" y="560" width="240" height="170" rx="8" fill="#1e6b3a" stroke="#0e3d20" stroke-width="2"/>
+<rect x="1370" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="1396" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="1422" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<rect x="1448" y="652" width="16" height="16" fill="#d4af37" opacity="0.85"/>
+<text x="1420.0" y="610" font-size="18" text-anchor="middle" font-weight="bold" fill="#fff">Back radar</text>
+<text x="1420.0" y="632" font-size="13" text-anchor="middle" font-weight="normal" fill="#e0f2e7">HLK-LD2451 24 GHz radar</text>
+<text x="1420.0" y="700" font-size="12" text-anchor="middle" font-weight="normal" fill="#cfe9d8" font-style="italic">faces traffic approaching the back</text>
+<text x="1420.0" y="718" font-size="11" text-anchor="middle" font-weight="normal" fill="#cfe9d8">5 V in · 3.3 V UART · ≥ 300 mA</text>
+<rect x="1474" y="554" width="12" height="10" fill="#c9a227"/>
+<text x="1480" y="580" font-size="12" text-anchor="middle" font-weight="bold" fill="#fff">5V</text>
+<rect x="1509" y="554" width="12" height="10" fill="#c9a227"/>
+<text x="1515" y="580" font-size="12" text-anchor="middle" font-weight="bold" fill="#fff">GND</text>
+<path d="M1480,554 L1480,368 A8,8 0 0 0 1480,352 L1480,330" fill="none" stroke="#d62728" stroke-width="4"/>
+<circle cx="1480" cy="330" r="5" fill="#d62728"/>
+<path d="M1515,554 L1515,360" fill="none" stroke="#222222" stroke-width="4"/>
+<circle cx="1515" cy="360" r="5" fill="#222222"/>
+<rect x="1296" y="634" width="10" height="12" fill="#c9a227"/>
+<text x="1314" y="645" font-size="12" text-anchor="start" font-weight="bold" fill="#fff">TX</text>
+<rect x="1296" y="714" width="10" height="12" fill="#c9a227"/>
+<text x="1314" y="725" font-size="12" text-anchor="start" font-weight="bold" fill="#fff">RX</text>
+<path d="M1296,640 L1104,640" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round"/>
+<path d="M1104,720 L1158,720" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 6"/>
+<path d="M1242,720 L1296,720" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round" stroke-dasharray="10 6"/>
+<rect x="1158" y="705" width="84" height="30" rx="4" fill="#fff" stroke="#1f77b4" stroke-width="2"/>
+<text x="1200" y="725" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f77b4">5 V → 3.3 V</text>
+<text x="1200" y="754" font-size="11" text-anchor="middle" font-weight="normal" fill="#444">1 kΩ / 2 kΩ divider</text>
+<text x="1200" y="769" font-size="11" text-anchor="middle" font-weight="normal" fill="#444">or level shifter</text>
+<text x="1200" y="632" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f77b4">radar TX → Mega RX2</text>
+<text x="410" y="800" font-size="11" text-anchor="middle" font-weight="normal" fill="#444" font-style="italic">optional: only needed to</text>
+<text x="410" y="814" font-size="11" text-anchor="middle" font-weight="normal" fill="#444" font-style="italic">send config to the radar</text>
+<text x="1200" y="800" font-size="11" text-anchor="middle" font-weight="normal" fill="#444" font-style="italic">optional: only needed to</text>
+<text x="1200" y="814" font-size="11" text-anchor="middle" font-weight="normal" fill="#444" font-style="italic">send config to the radar</text>
+<rect x="40" y="850" width="1520" height="300" rx="10" fill="#f7f7f7" stroke="#ccc"/>
+<text x="60" y="882" font-size="17" text-anchor="start" font-weight="bold" fill="#222">Power</text>
+<text x="60" y="910" font-size="14" text-anchor="start" font-weight="normal" fill="#222">1. Cut the device end off a USB cable. Red = +5 V, black = GND. Insulate white and</text>
+<text x="82" y="932" font-size="14" text-anchor="start" font-weight="normal" fill="#222">green (data) separately. Colors vary between cables — check with a multimeter.</text>
+<text x="60" y="954" font-size="14" text-anchor="start" font-weight="normal" fill="#222">2. Use a 5 V / 3 A (or bigger) charger and a short cable with thick power wires.</text>
+<text x="60" y="976" font-size="14" text-anchor="start" font-weight="normal" fill="#222">3. Put a 3 A fuse (blade fuse or polyfuse) in the red wire, close to the cable.</text>
+<text x="60" y="998" font-size="14" text-anchor="start" font-weight="normal" fill="#222">4. USB can't deliver the 5 A that 512 LEDs could draw. The sketch limits the LEDs</text>
+<text x="82" y="1020" font-size="14" text-anchor="start" font-weight="normal" fill="#222">to MAX_MILLIAMPS (2000 mA), leaving room for the radars and the Mega.</text>
+<text x="60" y="1042" font-size="14" text-anchor="start" font-weight="normal" fill="#222">5. The 5V pin bypasses the Mega's USB protection. Unplug the power cable</text>
+<text x="82" y="1064" font-size="14" text-anchor="start" font-weight="normal" fill="#222">before you plug the Mega into a computer.</text>
+<text x="820" y="882" font-size="17" text-anchor="start" font-weight="bold" fill="#222">LEDs and radar</text>
+<text x="820" y="910" font-size="14" text-anchor="start" font-weight="normal" fill="#222">6. Put a 1000 µF (≥ 6.3 V) capacitor across 5V/GND at each matrix. Mind polarity.</text>
+<text x="820" y="932" font-size="14" text-anchor="start" font-weight="normal" fill="#222">7. Put a 330 Ω resistor in each DIN line, close to the matrix.</text>
+<text x="820" y="954" font-size="14" text-anchor="start" font-weight="normal" fill="#222">8. Wire to the matrix's IN end (the PCB arrows point away from it).</text>
+<text x="820" y="976" font-size="14" text-anchor="start" font-weight="normal" fill="#222">9. Each radar needs 5 V at ≥ 300 mA. Its TX is 3.3 V and goes straight to the Mega.</text>
+<text x="820" y="998" font-size="14" text-anchor="start" font-weight="normal" fill="#222">10. Mega TX → radar RX (dashed) is optional. If used, drop 5 V to 3.3 V.</text>
+<text x="820" y="1020" font-size="14" text-anchor="start" font-weight="normal" fill="#222">11. Every ground is joined through the GND bus.</text>
+<line x1="60" y1="1123" x2="100" y2="1123" stroke="#d62728" stroke-width="4"/>
+<text x="108" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">+5 V</text>
+<line x1="184" y1="1123" x2="224" y2="1123" stroke="#222222" stroke-width="4"/>
+<text x="232" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">GND</text>
+<line x1="299" y1="1123" x2="339" y2="1123" stroke="#ff7f0e" stroke-width="4"/>
+<text x="347" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">LED data</text>
+<line x1="459" y1="1123" x2="499" y2="1123" stroke="#1f77b4" stroke-width="4"/>
+<text x="507" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">radar UART</text>
+<line x1="637" y1="1123" x2="677" y2="1123" stroke="#1f77b4" stroke-width="4" stroke-dasharray="10 6"/>
+<text x="685" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">optional</text>
+<circle cx="807" cy="1123" r="5" fill="#222222"/>
+<text x="819" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">wires joined</text>
+<path d="M947,1123 L959,1123 A8,8 0 0 1 975,1123 L987,1123" fill="none" stroke="#222222" stroke-width="3"/>
+<line x1="967" y1="1108" x2="967" y2="1138" stroke="#d62728" stroke-width="3"/>
+<text x="997" y="1128" font-size="13" text-anchor="start" font-weight="normal" fill="#222">crossing, not connected</text>
+</svg>
